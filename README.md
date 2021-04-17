@@ -1,1 +1,1 @@
-# mr-dingle
+# Doug Dingle, Know-It-All, ffs.
