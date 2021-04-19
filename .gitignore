@@ -1,3 +1,2 @@
 node_modules
-/src/discord-config.js
-/dist/discord-config.js
+/config.js
