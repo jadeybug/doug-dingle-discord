@@ -1,12 +1,15 @@
 //@ts-check
 
-'use-strict'
-
-const { Client, ClientUser } = require('discord.js')
-import wiki from 'wikipedia' 
-import Config from './config.js' 
-import Markov from 'markov-strings'
-import Page from 'wikipedia/dist/page'
+import { Client } from 'discord.js'
+import Config from './discord-config.js'
+import MarkovPkg from 'markov-strings'
+// @ts-ignore
+const Markov = MarkovPkg.default
+import wikijsPkg from 'wikijs'
+// @ts-ignore
+const wikijs = wikijsPkg.default
+import RandomInteger from 'random-int'
+import RandomItem from 'random-item'
 
 /**
  * @type {{
@@ -31,32 +34,58 @@ const markov = new Markov({
 	stateSize:3
 })
 
-const addImages = (images) => {
-	console.log(images)
+const allImages = {
+	links: []
 }
 
 /**
- * @param {string} content 
+ * 
+ * @param {string[]} images 
+ */
+const addImages = (images) => {
+	allImages.links.push(...images)
+}
+
+/** Which wikipedia page sections should not be included in the corpus? */
+const excludedSections = [
+	"See also",
+	"References",
+	"External links",
+]
+
+/**
+ * @param {import('wikijs').Content[]} content 
  */
 const addContent = (content) => {
 	if (content.length > 0){
-		markov.addData(content.replaceAll("\n", "").split(/\. |\./).map(sentence => ({ string: sentence+"." })).filter(string => string.string.length > 3))
+		// markov.addData(content.replaceAll("\n", "").split(/\. |\./).map(sentence => ({ string: sentence+"." })).filter(string => string.string.length > 3))
+		const markovContent = content.filter(section => (
+			!excludedSections.includes(section.title)
+		)).reduce((reducedContent, currentSection) => {
+			const parsedContent = currentSection.content.replaceAll("\n", "")
+				.split(/\. |\./)
+				.map(sentence => ({
+					title: currentSection.title,
+					string: sentence+".",
+				}))
+				.filter(mappedContent => mappedContent.string.length > 3)
+			return [
+				...reducedContent,
+				...parsedContent,
+			]
+		}, [])
+		console.log(markovContent)
+		markov.addData(markovContent)
 	}
 }
 
 /**
  * @param {string[]} links 
- * @param {number} numberOfLinks
- * @returns {Promise<Promise<Page>[]>}
+ * @returns {Promise<Promise<import('wikijs').Page>[]>}
  */
-const getLinks = (links, numberOfLinks) => {
+const getLinks = (links) => {
 	return new Promise((resolve, reject) => {
-		let mockLinkArray = []
-		for (let i=0; i<numberOfLinks; i++) {
-			mockLinkArray.push(i)
-		}
-		resolve(mockLinkArray.map(() => {
-			const link = links[Math.floor(Math.random() * links.length)]
+		resolve(RandomItem.multiple(links, RandomInteger(5, 20)).map(link => {
 			return getPage(link)
 		}))
 	})
@@ -71,9 +100,7 @@ const addLinks = (links) => {
 		/** 
 		 * TODO: variable distraction levels (chooses more or fewer links)
 		 **/
-		let randoCommando = Math.floor(Math.random() * 10)
-		const numberOfLinks = randoCommando <= links.length ? randoCommando : links.length
-		getLinks(links, numberOfLinks)
+		getLinks(links)
 		.then(chosenLinks => {
 			Promise.all(chosenLinks)
 			.then(pages => {
@@ -87,36 +114,25 @@ const addLinks = (links) => {
 				.catch((e) => reject(e))
 			})
 			.catch(e => reject(e))
-		})			
+		})
 	})
 }
 
+const wikiOptions = {headers: {
+	"User-Agent": "DougDingleKnowItAllDiscordBot/0.0 (jdmcg81+wikibot@gmail.com)"
+}}
 /**
  * 
  * @param {string} query 
  * @param {number} iteration 
- * @returns {Promise<Page>}
+ * @returns {Promise<import('wikijs').Page>}
  */
 const getPage = (query, iteration=0) => {
 	return new Promise((resolve, reject) => {
-		wiki.page(query, wikiPageOptions)
-		.then(page => resolve(page))
-		.catch(() => {
-			wiki.search(query, {
-				suggestion: true,
-			})
-			.then(response => {
-				let pageTitle = ""
-				if (response.results.length === 0) {
-					pageTitle = response.suggestion
-				} else {
-					pageTitle = response.results[iteration]?.title
-				}
-				getPage(pageTitle, iteration+1)
-				.then(resolve)
-				.catch(() => reject('Your premise is flawed.'))
-			})
-		})
+		wikijs(wikiOptions).find(query)
+		.then(resolve)
+		.catch(() => wikijs(wikiOptions).random(1).then(([randoPage]) => getPage(randoPage)))
+		.catch(() => reject('Your premise is flawed.'))
 	})
 }
 
@@ -134,7 +150,6 @@ client.on('message', msg => {
 					page.links().then(addLinks),
 					page.content().then(addContent),
 					page.images().then(addImages),
-					console.log(page.contentmodel)
 				])
 				.then(() => resolve(true))
 				.catch((e) => reject(e))
@@ -149,11 +164,11 @@ client.on('message', msg => {
 				msg.channel.send(knowledge.string.substring(0, 2000))
 			} catch (e) {
 				msg.channel.send("It's just such an advanced topic that I can't really put it into words that you'll understand.")
-				console.log(e)
+				console.error(e)
 			}
 		})
 		.catch((e) => {
-			msg.channel.send(e)
+			msg.channel.send("I just can't even right now.")
 			console.error(e)
 		})
 	}

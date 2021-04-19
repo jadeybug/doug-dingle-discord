@@ -13,6 +13,7 @@
   "name": "dingle",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
     "acorn": "^8.1.0",
     "ajv": "^6.12.6",
@@ -237,6 +238,8 @@
     "process-nextick-args": "^2.0.1",
     "pump": "^3.0.0",
     "punycode": "^2.1.1",
+    "random-int": "^3.0.0",
+    "random-item": "^4.0.0",
     "randombytes": "^2.1.0",
     "read-chunk": "^3.2.0",
     "read-pkg": "^5.2.0",
@@ -338,7 +341,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node index.js"
+    "build": "babel src -d dist",
+    "start": "npm run build && nodemon dist/index.js"
   },
   "repository": {
     "type": "git",
