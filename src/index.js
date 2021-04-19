@@ -1,7 +1,7 @@
 //@ts-check
 
 import { Client } from 'discord.js'
-import Config from './discord-config.js'
+import Config from '../config.js'
 import MarkovPkg from 'markov-strings'
 // @ts-ignore
 const Markov = MarkovPkg.default
