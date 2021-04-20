@@ -61,17 +61,21 @@ const addContent = (content) => {
 		const markovContent = content.filter(section => (
 			!excludedSections.includes(section.title)
 		)).reduce((reducedContent, currentSection) => {
-			const parsedContent = currentSection.content.replaceAll("\n", "")
+			const parsedContent = currentSection?.content?.replaceAll("\n", "")
 				.split(/\. |\./)
 				.map(sentence => ({
 					title: currentSection.title,
 					string: sentence+".",
 				}))
 				.filter(mappedContent => mappedContent.string.length > 3)
-			return [
-				...reducedContent,
-				...parsedContent,
-			]
+			if (!!parsedContent) {
+				return [
+					...reducedContent,
+					...parsedContent,
+				]
+			} else {
+				return reducedContent
+			}
 		}, [])
 		try {
 			if (!!markovContent && markovContent.length > 0)
