@@ -56,7 +56,6 @@ const excludedSections = [
  * @param {import('wikijs').Content[]} content 
  */
 const addContent = (content) => {
-	console.log(content)
 	if (content.length > 0){
 		// markov.addData(content.replaceAll("\n", "").split(/\. |\./).map(sentence => ({ string: sentence+"." })).filter(string => string.string.length > 3))
 		const markovContent = content.filter(section => (
@@ -75,7 +74,7 @@ const addContent = (content) => {
 			]
 		}, [])
 		try {
-			console.log(markovContent)
+			if (!!markovContent && markovContent.length > 0)
 			markov.addData(markovContent)
 		} catch(e) {
 			console.log(e)
