@@ -1,10 +1,10 @@
 //@ts-check
 import { Client } from 'discord.js';
-import Config from './discord-config.js';
 import MarkovPkg from 'markov-strings'; // @ts-ignore
 
 const Markov = MarkovPkg.default;
-import wikijsPkg from 'wikijs';
+import wikijsPkg from 'wikijs'; // @ts-ignore
+
 const wikijs = wikijsPkg.default;
 import RandomInteger from 'random-int';
 import RandomItem from 'random-item';
@@ -142,4 +142,5 @@ client.on('message', msg => {
     });
   }
 });
-client.login(Config.key);
+console.log(process.env);
+client.login(process.env.DISCORD_KEY);

@@ -1,7 +1,6 @@
 //@ts-check
 
 import { Client } from 'discord.js'
-import Config from '../config.js'
 import MarkovPkg from 'markov-strings'
 // @ts-ignore
 const Markov = MarkovPkg.default
@@ -173,5 +172,4 @@ client.on('message', msg => {
 		})
 	}
 });
-
-client.login(Config.key);
+client.login(process.env.DISCORD_KEY);
