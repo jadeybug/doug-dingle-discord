@@ -1,1 +1,1 @@
-# Doug Dingle, Know-It-All, ffs.
+# Doug Dingle, Know-It-All.
