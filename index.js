@@ -61,8 +61,8 @@ const addContent = (content) => {
 		const markovContent = content.filter(section => (
 			!excludedSections.includes(section.title)
 		)).reduce((reducedContent, currentSection) => {
-			if (!!currentSection?.content) {
-				const parsedContent = currentSection?.content.replaceAll("\n", "")
+			if (!!currentSection?.content && currentSection?.content?.length > 0) {
+				const parsedContent = currentSection?.content?.replaceAll("\n", "")
 					.split(/\. |\./)
 					.map(sentence => ({
 						title: currentSection.title,
@@ -158,6 +158,7 @@ client.on('ready', () => {
 
 client.on('message', msg => {
 	if (msg.mentions?.users?.find(usr => usr.id === client.user.id)) {
+		msg.channel.startTyping()
 		const query = msg.content.substr(msg.content.indexOf("<@"+client.user.id+">") + client.user.id.length + 3).trim()
 		getPage(query)
 		.then(page => {
@@ -177,13 +178,16 @@ client.on('message', msg => {
 					maxTries:1000,
 					filter: result => result.score > 0 && result.string.endsWith(".") && result.refs.length > 2
 				})
+				msg.channel.stopTyping()
 				msg.channel.send(knowledge.string.substring(0, 2000))
 			} catch (e) {
+				msg.channel.stopTyping()
 				msg.channel.send("It's just such an advanced topic that I can't really put it into words that you'll understand.")
 				console.error(e)
 			}
 		})
 		.catch((e) => {
+			msg.channel.stopTyping()
 			msg.channel.send("I just can't even right now.")
 			console.error(e)
 		})
