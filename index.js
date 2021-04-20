@@ -62,7 +62,7 @@ const addContent = (content) => {
 			!excludedSections.includes(section.title)
 		)).reduce((reducedContent, currentSection) => {
 			if (!!currentSection?.content && currentSection?.content?.length > 0) {
-				const parsedContent = currentSection?.content?.replaceAll("\n", "")
+				const parsedContent = currentSection?.content?.replace(/\n/g, "")
 					.split(/\. |\./)
 					.map(sentence => ({
 						title: currentSection.title,
