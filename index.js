@@ -61,6 +61,7 @@ const addContent = (content) => {
 		const markovContent = content.filter(section => (
 			!excludedSections.includes(section.title)
 		)).reduce((reducedContent, currentSection) => {
+			console.log(currentSection)
 			const parsedContent = currentSection?.content?.replaceAll("\n", "")
 				.split(/\. |\./)
 				.map(sentence => ({
