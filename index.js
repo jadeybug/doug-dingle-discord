@@ -61,26 +61,33 @@ const addContent = (content) => {
 		const markovContent = content.filter(section => (
 			!excludedSections.includes(section.title)
 		)).reduce((reducedContent, currentSection) => {
-			console.log(currentSection)
-			const parsedContent = currentSection?.content?.replaceAll("\n", "")
-				.split(/\. |\./)
-				.map(sentence => ({
-					title: currentSection.title,
-					string: sentence+".",
-				}))
-				.filter(mappedContent => mappedContent.string.length > 3)
-			if (!!parsedContent) {
-				return [
-					...reducedContent,
-					...parsedContent,
-				]
+			if (!!currentSection?.content) {
+				const parsedContent = currentSection?.content.replaceAll("\n", "")
+					.split(/\. |\./)
+					.map(sentence => ({
+						title: currentSection.title,
+						string: sentence+".",
+					}))
+					.filter(mappedContent => mappedContent.string.length > 3)
+				if (!!parsedContent) {
+					return [
+						...reducedContent,
+						...parsedContent,
+					]
+				} else {
+					return reducedContent
+				}
 			} else {
+				if (!!currentSection?.items && currentSection?.items?.length > 0 && !!currentSection?.items[0]?.content) {
+					addContent(currentSection?.items)
+				}
 				return reducedContent
 			}
 		}, [])
 		try {
-			if (!!markovContent && markovContent.length > 0)
-			markov.addData(markovContent)
+			if (!!markovContent && markovContent.length > 0) {
+				markov.addData(markovContent)
+			}
 		} catch(e) {
 			console.log(e)
 		}
